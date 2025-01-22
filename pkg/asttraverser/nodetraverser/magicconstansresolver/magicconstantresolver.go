@@ -5,7 +5,6 @@ package magicconstansresolver
 import (
 	"fmt"
 	"log"
-	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -16,7 +15,7 @@ import (
 	"github.com/rxhunter00/XSS-Taint/pkg/asttraverser/astutils"
 )
 
-type MagicConstResolver struct {
+type MagicConstantResolver struct {
 	classStack    []string
 	parentStack   []string
 	functionStack []string
@@ -25,8 +24,8 @@ type MagicConstResolver struct {
 	filename      string
 }
 
-func NewMagicConstResolver(filename string) *MagicConstResolver {
-	return &MagicConstResolver{
+func NewMagicConstantResolver(filename string) *MagicConstantResolver {
+	return &MagicConstantResolver{
 		classStack:    make([]string, 0),
 		parentStack:   make([]string, 0),
 		functionStack: make([]string, 0),
@@ -35,7 +34,7 @@ func NewMagicConstResolver(filename string) *MagicConstResolver {
 	}
 }
 
-func (mcr *MagicConstResolver) EnterNode(n ast.Vertex) (ast.Vertex, asttraverser.ReturnModeFlag) {
+func (mcr *MagicConstantResolver) EnterNode(n ast.Vertex) (ast.Vertex, asttraverser.ReturnModeFlag) {
 
 	/*
 		__CLASS__ return class name
@@ -107,15 +106,12 @@ func (mcr *MagicConstResolver) EnterNode(n ast.Vertex) (ast.Vertex, asttraverser
 		// Get name string
 		nodeName := concatNameParts(n.Parts)
 		if nodeName == "self" {
-			// Error 'self' constant not recognized
-			if len(mcr.classStack) == 0 {
-				fmt.Println("Cannot use 'self' when no class scope is active")
-				os.Exit(1)
-			}
 
+			if len(mcr.classStack) == 0 {
+				log.Printf("No Active Class")
+			}
 			// convert self to the current class name
 			currClassName := mcr.classStack[len(mcr.classStack)-1]
-
 			return &ast.NameFullyQualified{
 				Position: n.Position,
 				Parts:    createNameParts(currClassName, n.Position),
@@ -123,8 +119,7 @@ func (mcr *MagicConstResolver) EnterNode(n ast.Vertex) (ast.Vertex, asttraverser
 		} else if nodeName == "parent" {
 			// Error 'parent' constant not recognized
 			if len(mcr.parentStack) == 0 {
-				fmt.Println("Cannot use 'parent' when current class scope has no parent")
-				os.Exit(1)
+				log.Printf("No Active Class")
 			}
 
 			// convert 'parent' to the current parent name
@@ -224,7 +219,7 @@ func (mcr *MagicConstResolver) EnterNode(n ast.Vertex) (ast.Vertex, asttraverser
 	return nil, asttraverser.REPLACEMODE
 }
 
-func (mcr *MagicConstResolver) LeaveNode(n ast.Vertex) (ast.Vertex, asttraverser.ReturnModeFlag) {
+func (mcr *MagicConstantResolver) LeaveNode(n ast.Vertex) (ast.Vertex, asttraverser.ReturnModeFlag) {
 	switch n := n.(type) {
 	case *ast.StmtClass:
 		popStringStack(&mcr.classStack)
@@ -246,8 +241,7 @@ func (mcr *MagicConstResolver) LeaveNode(n ast.Vertex) (ast.Vertex, asttraverser
 
 func popStringStack(st *[]string) string {
 	if len(*st) == 0 {
-		fmt.Println("Error: cannot pop empty stack")
-		os.Exit(1)
+		log.Printf("popStringStack:Pop on Empty")
 	}
 	top := (*st)[len(*st)-1]
 	*st = (*st)[:len(*st)-1]

@@ -10,6 +10,7 @@ import (
 	"github.com/VKCOM/php-parser/pkg/position"
 )
 
+// Some Stmt is List and some not so make as list
 func GetStmtList(node ast.Vertex) ([]ast.Vertex, error) {
 	switch typeNode := node.(type) {
 	case *ast.StmtStmtList:

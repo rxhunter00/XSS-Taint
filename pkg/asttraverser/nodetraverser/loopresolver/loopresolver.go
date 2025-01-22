@@ -31,17 +31,18 @@ func NewLoopResolver() *LoopResolver {
 // Stub Implement lr *LoopResolver NodeTraverser
 func (lr *LoopResolver) EnterNode(n ast.Vertex) (ast.Vertex, asttraverser.ReturnModeFlag) {
 	switch n := n.(type) {
-	case *ast.StmtForeach, *ast.StmtFor, *ast.StmtWhile, *ast.StmtDo:
-		lr.breakStack = append(lr.breakStack, lr.createLabelStatement())
-		lr.contStack = append(lr.contStack, lr.createLabelStatement())
-	case *ast.StmtSwitch:
-		label := lr.createLabelStatement()
-		lr.breakStack = append(lr.breakStack, label)
-		lr.contStack = append(lr.contStack, label)
 	case *ast.StmtBreak:
 		lr.handlerBreakStatement(n)
 	case *ast.StmtContinue:
 		lr.handlerContinueStatement(n)
+	case *ast.StmtForeach, *ast.StmtFor, *ast.StmtWhile, *ast.StmtDo:
+		lr.breakStack = append(lr.breakStack, lr.createLabelStatement())
+		lr.contStack = append(lr.contStack, lr.createLabelStatement())	
+	case *ast.StmtSwitch:
+		label := lr.createLabelStatement()
+		lr.breakStack = append(lr.breakStack, label)
+		lr.contStack = append(lr.contStack, label)
+
 	}
 	return nil, asttraverser.REPLACEMODE
 }

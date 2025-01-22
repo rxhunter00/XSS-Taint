@@ -1,6 +1,5 @@
 // https://github.com/nikic/PHP-Parser/blob/master/lib/PhpParser/NodeVisitor/NameResolver.php
-// https://github.com/ircmaxell/php-cfg/blob/master/lib/PHPCfg/AstVisitor/NameResolver.php
-//
+
 
 package namespaceresolver
 

@@ -41,7 +41,7 @@ func (ns *Namespace) AddAlias(aliasType string, aliasName string, alias string) 
 func (ns *Namespace) ResolveName(nameNode ast.Vertex, aliasType string) (string, error) {
 	switch n := nameNode.(type) {
 	case *ast.NameFullyQualified:
-		// Fully qualifid name is already resolved
+
 		return astutils.ConcatNameParts(n.Parts), nil
 
 	case *ast.NameRelative:
