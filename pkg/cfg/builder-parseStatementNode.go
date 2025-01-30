@@ -196,14 +196,14 @@ func (builder *CFGBuilder) parseStmtWhile(stmt *ast.StmtWhile) {
 
 func (builder *CFGBuilder) parseStmtTrait(stmt *ast.StmtTrait) {
 	name := builder.parseExprNode(stmt.Name)
-	prevClass := builder.CurrClass
-	builder.CurrClass = name.(*OperandString)
+	prevClass := builder.currClassOper
+	builder.currClassOper = name.(*OperandString)
 	stmts, err := builder.parseStmtNodes(stmt.Stmts, NewBlock(builder.GetBlockIdCount()))
 	if err != nil {
 		log.Fatalf("Error in parseStmtTrait: %v", err)
 	}
 	builder.currentBlock.AddInstructions(NewOpStmtTrait(name, stmts, stmt.Position))
-	builder.CurrClass = prevClass
+	builder.currClassOper = prevClass
 }
 
 func (builder *CFGBuilder) parseStmtTraitUse(stmt *ast.StmtTraitUse) {
@@ -381,8 +381,8 @@ func (cb *CFGBuilder) parseStmtInterface(stmt *ast.StmtInterface) {
 	if err != nil {
 		log.Fatalf("Error in parseStmtInterface: %v", err)
 	}
-	tmpClass := cb.CurrClass
-	cb.CurrClass = name.(*OperandString)
+	tmpClass := cb.currClassOper
+	cb.currClassOper = name.(*OperandString)
 
 	extends, _ := cb.parseExprList(stmt.Extends, PARSER_MODE_NONE)
 	block, err := cb.parseStmtNodes(stmt.Stmts, cb.currentBlock)
@@ -392,7 +392,7 @@ func (cb *CFGBuilder) parseStmtInterface(stmt *ast.StmtInterface) {
 	op := NewOpStmtInterface(name, block, extends, stmt.Position)
 	cb.currentBlock.AddInstructions(op)
 
-	cb.CurrClass = tmpClass
+	cb.currClassOper = tmpClass
 }
 
 func (cb *CFGBuilder) parseStmtLabel(stmt *ast.StmtLabel) {
@@ -836,7 +836,7 @@ func (builder *CFGBuilder) parseStmtConst(stmt *ast.StmtConstant) {
 	builder.currentBlock.AddInstructions(opConst)
 
 	// define the constant in this block
-	nameStr, err := GetOperName(name)
+	nameStr, err := GetOperandName(name)
 	if err != nil {
 		log.Fatalf("Error in parseStmtConst: %v", err)
 	}
@@ -852,7 +852,7 @@ func (buiilder *CFGBuilder) parseStmtConstList(stmt *ast.StmtConstList) {
 }
 
 func (builder *CFGBuilder) parseStmtClassConstList(stmt *ast.StmtClassConstList) {
-	if builder.CurrClass == nil {
+	if builder.currClassOper == nil {
 		log.Fatal("Error: Unknown current class for a constants list")
 	}
 
@@ -862,7 +862,7 @@ func (builder *CFGBuilder) parseStmtClassConstList(stmt *ast.StmtClassConstList)
 }
 
 func (builder *CFGBuilder) parseStmtClassMethod(stmt *ast.StmtClassMethod) {
-	if builder.CurrClass == nil {
+	if builder.currClassOper == nil {
 		log.Fatal("Error: Unknown current class for a method")
 	}
 
@@ -873,7 +873,7 @@ func (builder *CFGBuilder) parseStmtClassMethod(stmt *ast.StmtClassMethod) {
 	flags := builder.parseFuncModifier(stmt.Modifiers, stmt.AmpersandTkn != nil)
 	returnType := builder.parseTypeNode(stmt.ReturnType)
 	entryBlock := NewBlock(builder.GetBlockIdCount())
-	fn, err := NewClassFunc(name, flags, returnType, entryBlock, *builder.CurrClass, stmt.Position)
+	fn, err := NewClassFunc(name, flags, returnType, entryBlock, *builder.currClassOper, stmt.Position)
 	if err != nil {
 		log.Fatalf("Error in parseStmtClassMethod: %v", err)
 	}
@@ -899,8 +899,8 @@ func (builder *CFGBuilder) parseStmtClassMethod(stmt *ast.StmtClassMethod) {
 
 func (builder *CFGBuilder) parseStmtClass(stmt *ast.StmtClass) {
 	name := builder.parseExprNode(stmt.Name)
-	prevClass := builder.CurrClass
-	builder.CurrClass = name.(*OperandString)
+	prevClass := builder.currClassOper
+	builder.currClassOper = name.(*OperandString)
 	attrGroups := builder.parseAttributeGroups(stmt.AttrGroups)
 	stmts, err := builder.parseStmtNodes(stmt.Stmts, NewBlock(builder.GetBlockIdCount()))
 	if err != nil {
@@ -913,7 +913,7 @@ func (builder *CFGBuilder) parseStmtClass(stmt *ast.StmtClass) {
 	op := NewOpStmtClass(name, stmts, modifFlags, extends, implements, attrGroups, stmt.Position)
 	builder.currentBlock.AddInstructions(op)
 
-	builder.CurrClass = prevClass
+	builder.currClassOper = prevClass
 }
 
 func (builder *CFGBuilder) parseStmtIf(vert *ast.StmtIf) {

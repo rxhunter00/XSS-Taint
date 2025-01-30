@@ -37,7 +37,7 @@ func NewOpStmtClass(name Operand, stmts *Block, flags ClassModifFlag, extends Op
 		AttrGroups: attrGroups,
 	}
 
-	AddReadRef(Op, name)
+	AddUseRef(Op, name)
 
 	return Op
 }
@@ -218,7 +218,7 @@ func NewOpStmtInterface(name Operand, stmts *Block, extends []Operand, pos *posi
 		Extends: extends,
 	}
 
-	AddReadRef(Op, name)
+	AddUseRef(Op, name)
 
 	return Op
 }
@@ -308,7 +308,7 @@ func NewOpStmtJumpIf(cond Operand, ifBlock *Block, elseBlock *Block, pos *positi
 		Else: elseBlock,
 	}
 
-	AddReadRef(Op, cond)
+	AddUseRef(Op, cond)
 
 	return Op
 }
@@ -437,8 +437,8 @@ func NewOpStmtSwitch(cond Operand, cases []Operand, targets []*Block, defaultTar
 		DefaultTarget: defaultTarget,
 	}
 
-	AddReadRef(Op, cond)
-	AddReadRefs(Op, cases...)
+	AddUseRef(Op, cond)
+	AddUseRefs(Op, cases...)
 
 	return Op
 }
@@ -498,7 +498,7 @@ func NewOpStmtTrait(name Operand, stmts *Block, pos *position.Position) *OpStmtT
 		Stmts: stmts,
 	}
 
-	AddReadRef(Op, name)
+	AddUseRef(Op, name)
 
 	return Op
 }
@@ -705,7 +705,7 @@ func NewOpConst(name, value Operand, block *Block, pos *position.Position) *OpCo
 		ValueBlock: block,
 	}
 
-	AddReadRefs(Op, name, value)
+	AddUseRefs(Op, name, value)
 
 	return Op
 }
@@ -752,7 +752,7 @@ func NewOpEcho(expr Operand, pos *position.Position) *OpEcho {
 		Expr: expr,
 	}
 
-	AddReadRef(Op, expr)
+	AddUseRef(Op, expr)
 
 	return Op
 }
@@ -794,7 +794,7 @@ func NewOpExit(expr Operand, pos *position.Position) *OpExit {
 		Expr: expr,
 	}
 
-	AddReadRef(Op, expr)
+	AddUseRef(Op, expr)
 
 	return Op
 }
@@ -836,7 +836,7 @@ func NewOpGlobalVar(vr Operand, pos *position.Position) *OpGlobalVar {
 		Var: vr,
 	}
 
-	AddReadRef(Op, vr)
+	AddUseRef(Op, vr)
 
 	return Op
 }
@@ -878,7 +878,7 @@ func NewOpReturn(expr Operand, pos *position.Position) *OpReturn {
 		Expr: expr,
 	}
 
-	AddReadRef(Op, expr)
+	AddUseRef(Op, expr)
 
 	return Op
 }
@@ -924,7 +924,7 @@ func NewOpStaticVar(vr, defaultVr Operand, defaultBlock *Block, pos *position.Po
 		DefaultBlock: defaultBlock,
 	}
 
-	AddReadRef(Op, defaultVr)
+	AddUseRef(Op, defaultVr)
 	AddWriteRef(Op, vr)
 
 	return Op
@@ -972,7 +972,7 @@ func NewOpThrow(expr Operand, pos *position.Position) *OpThrow {
 		Expr: expr,
 	}
 
-	AddReadRef(Op, expr)
+	AddUseRef(Op, expr)
 
 	return Op
 }
@@ -1017,7 +1017,7 @@ func NewOpUnset(exprs []Operand, exprsPos []*position.Position, pos *position.Po
 		ExprsPos: exprsPos,
 	}
 
-	AddReadRefs(Op, exprs...)
+	AddUseRefs(Op, exprs...)
 
 	return Op
 }

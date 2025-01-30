@@ -3,16 +3,16 @@ package cfg
 import "github.com/VKCOM/php-parser/pkg/position"
 
 type OpPhi struct {
-	Vars     map[Operand]struct{}
-	Result   Operand
-	PhiBlock *Block
+	Vars      map[Operand]struct{}
+	PhiResult Operand
+	PhiBlock  *Block
 	OpGeneral
 }
 
 func NewOpPhi(result Operand, block *Block, position *position.Position) *OpPhi {
 	op := &OpPhi{
 		Vars:      make(map[Operand]struct{}),
-		Result:    result,
+		PhiResult: result,
 		PhiBlock:  block,
 		OpGeneral: NewOpGeneral(position),
 	}
@@ -38,7 +38,7 @@ func (op *OpPhi) GetType() string {
 
 func (op *OpPhi) GetOpVars() map[string]Operand {
 	return map[string]Operand{
-		"Result": op.Result,
+		"Result": op.PhiResult,
 	}
 }
 
@@ -73,7 +73,7 @@ func (op *OpPhi) GetOpVars() map[string]Operand {
 func (op *OpPhi) Clone() Op {
 	return &OpPhi{
 		Vars:      op.Vars,
-		Result:    op.Result,
+		PhiResult: op.PhiResult,
 		PhiBlock:  op.PhiBlock,
 		OpGeneral: op.OpGeneral,
 	}
@@ -87,26 +87,26 @@ func (op *OpPhi) HasOperand(operand Operand) bool {
 }
 
 // Collects all the operands stored in op.Vars return as slice of Operand
-func (op *OpPhi) GetVars() []Operand {
-	vars := make([]Operand, 0, len(op.Vars))
+func (op *OpPhi) GetPhiOperands() []Operand {
+	pVars := make([]Operand, 0, len(op.Vars))
 	for variable := range op.Vars {
-		vars = append(vars, variable)
+		pVars = append(pVars, variable)
 	}
-	return vars
+	return pVars
 }
 
 // Add Operand
-func (op *OpPhi) AddOperand(oper Operand) {
+func (op *OpPhi) AddOperandtoPhi(oper Operand) {
 	var empty struct{}
 	// add if operand have not been in vars and not phi itself
-	if _, ok := op.Vars[oper]; !ok && op.Result != oper {
-		tmp := AddReadRef(op, oper)
+	if _, ok := op.Vars[oper]; !ok && op.PhiResult != oper {
+		tmp := AddUseRef(op, oper)
 		op.Vars[tmp] = empty
 	}
 }
 
 // Remove an operand from phi vars
-func (op *OpPhi) RemoveOperand(oper Operand) {
+func (op *OpPhi) RemoveOperandfromPhi(oper Operand) {
 	if _, ok := op.Vars[oper]; ok {
 		oper.RemoveUser(op)
 		delete(op.Vars, oper)

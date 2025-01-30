@@ -64,7 +64,7 @@ func (b *Block) GetPhi() []*OpPhi {
 	}
 	return res
 }
-
+// Set condition of c
 func (b *Block) SetCondition(conds []Operand) {
 	for _, cond := range conds {
 		cond.AddCondUsage(b)

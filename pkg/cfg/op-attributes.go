@@ -42,7 +42,7 @@ func NewOpAttribute(name Operand, args []Operand, pos *position.Position) *OpAtt
 		Args:      args,
 		OpGeneral: NewOpGeneral(pos),
 	}
-	AddReadRef(op, name)
+	AddUseRef(op, name)
 	return op
 }
 

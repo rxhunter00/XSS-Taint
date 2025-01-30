@@ -37,6 +37,7 @@ func NewTraverser() *ASTTraverser {
 func (t *ASTTraverser) AddNodeTraverser(nt ...NodeTraverser) {
 	t.NodeTraversers = append(t.NodeTraversers, nt...)
 }
+
 func (t *ASTTraverser) Traverse(node ast.Vertex) ast.Vertex {
 	if node == nil {
 		return nil

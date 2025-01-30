@@ -51,9 +51,9 @@ func Scan(dirPath string, filePaths []string) *report.ScanReport {
 
 		// OnFly
 		cfgTraverser := cfgtraverser.NewTraverser()
-		trivPhiRemover := simplifier.NewSimplifier()
+		optimizer := simplifier.NewSimplifier()
 		sourceFinder := sourcefinder.NewSourceFinder()
-		cfgTraverser.AddBlockTraverser(trivPhiRemover)
+		cfgTraverser.AddBlockTraverser(optimizer)
 		cfgTraverser.Traverse(script)
 
 		cfgTraverser = cfgtraverser.NewTraverser()

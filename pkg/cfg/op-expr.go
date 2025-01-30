@@ -39,7 +39,7 @@ func NewOpExprParam(name Operand,
 		OpGeneral:    NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, name, defaultVar)
+	AddUseRefs(op, name, defaultVar)
 	AddWriteRef(op, name)
 
 	return op
@@ -100,7 +100,7 @@ func NewOpExprConcatList(list []Operand, listPos []*position.Position, pos *posi
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, list...)
+	AddUseRefs(op, list...)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -174,7 +174,7 @@ func NewOpExprAssign(vr, expr Operand, varPos, exprPos, pos *position.Position) 
 		OpGeneral: NewOpGeneral(pos),
 	}
 	// Write read ref to
-	AddReadRef(op, expr)
+	AddUseRef(op, expr)
 	AddWriteRefs(op, op.Result, vr)
 
 	return op
@@ -237,7 +237,7 @@ func NewOpExprAssignRef(vr, expr Operand, pos *position.Position) *OpExprAssignR
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRef(op, expr)
+	AddUseRef(op, expr)
 	AddWriteRefs(op, op.Result, vr)
 
 	return op
@@ -290,7 +290,7 @@ func NewOpExprArrayDimFetch(vr, dim Operand, pos *position.Position) *OpExprArra
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, vr, dim)
+	AddUseRefs(op, vr, dim)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -328,9 +328,9 @@ func (op *OpExprArrayDimFetch) Clone() Op {
 	}
 }
 
-func (op *OpExprArrayDimFetch) ToString() string {
-	varName, _ := GetOperName(op.Var)
-	dimStr, err := GetOperName(op.Dim)
+func (op *OpExprArrayDimFetch) String() string {
+	varName, _ := GetOperandName(op.Var)
+	dimStr, err := GetOperandName(op.Dim)
 	if err != nil {
 		return ""
 	}
@@ -343,7 +343,7 @@ func (op *OpExprArrayDimFetch) ToString() string {
 			return ""
 		}
 		if v, ok := varDef.(*OpExprArrayDimFetch); ok {
-			varName = v.ToString()
+			varName = v.String()
 			return varName + "[" + dimStr + "]"
 		}
 	}
@@ -372,7 +372,7 @@ func NewOpExprBinaryConcat(left, right Operand, leftPos, rightPos, pos *position
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -436,7 +436,7 @@ func NewOpExprBinaryBitwiseAnd(left, right Operand, pos *position.Position) *OpE
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -489,7 +489,7 @@ func NewOpExprBinaryBitwiseOr(left, right Operand, pos *position.Position) *OpEx
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -542,7 +542,7 @@ func NewOpExprBinaryBitwiseXor(left, right Operand, pos *position.Position) *OpE
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -595,7 +595,7 @@ func NewOpExprBinaryCoalesce(left, right Operand, pos *position.Position) *OpExp
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -648,7 +648,7 @@ func NewOpExprBinaryDiv(left, right Operand, pos *position.Position) *OpExprBina
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -701,7 +701,7 @@ func NewOpExprBinaryMinus(left, right Operand, pos *position.Position) *OpExprBi
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -754,7 +754,7 @@ func NewOpExprBinaryMod(left, right Operand, pos *position.Position) *OpExprBina
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -807,7 +807,7 @@ func NewOpExprBinaryMul(left, right Operand, pos *position.Position) *OpExprBina
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -860,7 +860,7 @@ func NewOpExprBinaryPlus(left, right Operand, pos *position.Position) *OpExprBin
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -913,7 +913,7 @@ func NewOpExprBinaryPow(left, right Operand, pos *position.Position) *OpExprBina
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -966,7 +966,7 @@ func NewOpExprBinaryShiftLeft(left, right Operand, pos *position.Position) *OpEx
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -1019,7 +1019,7 @@ func NewOpExprBinaryShiftRight(left, right Operand, pos *position.Position) *OpE
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -1074,7 +1074,7 @@ func NewOpExprBinaryLogicalAnd(left, right Operand, pos *position.Position) *OpE
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -1127,7 +1127,7 @@ func NewOpExprBinaryLogicalOr(left, right Operand, pos *position.Position) *OpEx
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -1180,7 +1180,7 @@ func NewOpExprBinaryLogicalXor(left, right Operand, pos *position.Position) *OpE
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -1233,7 +1233,7 @@ func NewOpExprBinarySpaceship(left, right Operand, pos *position.Position) *OpEx
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -1286,7 +1286,7 @@ func NewOpExprBinarySmallerOrEqual(left, right Operand, pos *position.Position) 
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -1339,7 +1339,7 @@ func NewOpExprBinarySmaller(left, right Operand, pos *position.Position) *OpExpr
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -1392,7 +1392,7 @@ func NewOpExprBinaryBiggerOrEqual(left, right Operand, pos *position.Position) *
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -1445,7 +1445,7 @@ func NewOpExprBinaryBigger(left, right Operand, pos *position.Position) *OpExprB
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -1498,7 +1498,7 @@ func NewOpExprBinaryNotEqual(left, right Operand, pos *position.Position) *OpExp
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -1551,7 +1551,7 @@ func NewOpExprBinaryNotIdentical(left, right Operand, pos *position.Position) *O
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -1604,7 +1604,7 @@ func NewOpExprBinaryIdentical(left, right Operand, pos *position.Position) *OpEx
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -1657,7 +1657,7 @@ func NewOpExprBinaryEqual(left, right Operand, pos *position.Position) *OpExprBi
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRefs(op, left, right)
+	AddUseRefs(op, left, right)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -1709,7 +1709,7 @@ func NewOpExprCastBool(expr Operand, pos *position.Position) *OpExprCastBool {
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRef(Op, expr)
+	AddUseRef(Op, expr)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -1756,7 +1756,7 @@ func NewOpExprCastDouble(expr Operand, pos *position.Position) *OpExprCastDouble
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRef(Op, expr)
+	AddUseRef(Op, expr)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -1803,7 +1803,7 @@ func NewOpExprCastInt(expr Operand, pos *position.Position) *OpExprCastInt {
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRef(Op, expr)
+	AddUseRef(Op, expr)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -1850,7 +1850,7 @@ func NewOpExprCastString(expr Operand, pos *position.Position) *OpExprCastString
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRef(Op, expr)
+	AddUseRef(Op, expr)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -1897,7 +1897,7 @@ func NewOpExprCastObject(expr Operand, pos *position.Position) *OpExprCastObject
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRef(Op, expr)
+	AddUseRef(Op, expr)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -1944,7 +1944,7 @@ func NewOpExprCastUnset(expr Operand, pos *position.Position) *OpExprCastUnset {
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRef(Op, expr)
+	AddUseRef(Op, expr)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -1991,7 +1991,7 @@ func NewOpExprCastArray(expr Operand, pos *position.Position) *OpExprCastArray {
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRef(Op, expr)
+	AddUseRef(Op, expr)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -2039,7 +2039,7 @@ func NewOpExprUnaryPlus(expr Operand, pos *position.Position) *OpExprUnaryPlus {
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRef(Op, expr)
+	AddUseRef(Op, expr)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -2086,7 +2086,7 @@ func NewOpExprUnaryMinus(expr Operand, pos *position.Position) *OpExprUnaryMinus
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRef(Op, expr)
+	AddUseRef(Op, expr)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -2138,8 +2138,8 @@ func NewOpExprArray(keys, vals []Operand, byRef []bool, pos *position.Position) 
 		Result:    NewTemporaryOperand(nil),
 	}
 
-	AddReadRefs(op, keys...)
-	AddReadRefs(op, vals...)
+	AddUseRefs(op, keys...)
+	AddUseRefs(op, vals...)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -2207,7 +2207,7 @@ func NewOpExprClosure(Func *Func, useVars []Operand, pos *position.Position) *Op
 		Result:    NewTemporaryOperand(nil),
 	}
 
-	AddReadRefs(Op, useVars...)
+	AddUseRefs(Op, useVars...)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -2271,7 +2271,7 @@ func NewOpExprBitwiseNot(expr Operand, pos *position.Position) *OpExprBitwiseNot
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRef(op, expr)
+	AddUseRef(op, expr)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -2318,7 +2318,7 @@ func NewOpExprBooleanNot(expr Operand, pos *position.Position) *OpExprBooleanNot
 		OpGeneral: NewOpGeneral(pos),
 	}
 
-	AddReadRef(op, expr)
+	AddUseRef(op, expr)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -2369,7 +2369,7 @@ func NewOpExprClassConstFetch(class, name Operand, pos *position.Position) *OpEx
 		Result: NewTemporaryOperand(nil),
 	}
 
-	AddReadRefs(Op, class, name)
+	AddUseRefs(Op, class, name)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -2420,7 +2420,7 @@ func NewOpExprClone(expr Operand, pos *position.Position) *OpExprClone {
 		Result:    NewTemporaryOperand(nil),
 	}
 
-	AddReadRef(Op, expr)
+	AddUseRef(Op, expr)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -2467,7 +2467,7 @@ func NewOpExprConstFetch(name Operand, pos *position.Position) *OpExprConstFetch
 		Result:    NewTemporaryOperand(nil),
 	}
 
-	AddReadRef(Op, name)
+	AddUseRef(Op, name)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -2514,7 +2514,7 @@ func NewOpExprEmpty(expr Operand, pos *position.Position) *OpExprEmpty {
 		Result:    NewTemporaryOperand(nil),
 	}
 
-	AddReadRef(Op, expr)
+	AddUseRef(Op, expr)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -2561,7 +2561,7 @@ func NewOpExprEval(expr Operand, pos *position.Position) *OpExprEval {
 		Result:    NewTemporaryOperand(nil),
 	}
 
-	AddReadRef(Op, expr)
+	AddUseRef(Op, expr)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -2616,8 +2616,8 @@ func NewOpExprFunctionCall(name Operand, args []Operand, namePos *position.Posit
 		ArgsPos:   argsPos,
 	}
 
-	AddReadRef(op, name)
-	AddReadRefs(op, args...)
+	AddUseRef(op, name)
+	AddUseRefs(op, args...)
 	AddWriteRef(op, op.Result)
 
 	return op
@@ -2628,7 +2628,7 @@ func (op *OpExprFunctionCall) GetType() string {
 }
 
 func (op *OpExprFunctionCall) GetName() string {
-	funcName, _ := GetOperName(op.Name)
+	funcName, _ := GetOperandName(op.Name)
 
 	return funcName
 }
@@ -2714,7 +2714,7 @@ func NewOpExprInclude(expr Operand, tp INCLUDE_TYPE, pos *position.Position) *Op
 		Result:    NewTemporaryOperand(nil),
 	}
 
-	AddReadRef(Op, expr)
+	AddUseRef(Op, expr)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -2778,7 +2778,7 @@ func NewOpExprInstanceOf(expr Operand, class Operand, pos *position.Position) *O
 		Result:    NewTemporaryOperand(nil),
 	}
 
-	AddReadRefs(Op, expr, class)
+	AddUseRefs(Op, expr, class)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -2829,7 +2829,7 @@ func NewOpExprIsset(vars []Operand, pos *position.Position) *OpExprIsset {
 		Result:    NewTemporaryOperand(nil),
 	}
 
-	AddReadRefs(Op, vars...)
+	AddUseRefs(Op, vars...)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -2902,8 +2902,8 @@ func NewOpExprMethodCall(vr, name Operand, args []Operand, varPos, namePos *posi
 		ArgsPos:    argsPos,
 	}
 
-	AddReadRefs(Op, vr, name)
-	AddReadRefs(Op, args...)
+	AddUseRefs(Op, vr, name)
+	AddUseRefs(Op, args...)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -2922,8 +2922,8 @@ func NewOpExprNullSafeMethodCall(vr, name Operand, args []Operand, varPos, nameP
 		ArgsPos:    argsPos,
 	}
 
-	AddReadRefs(Op, vr, name)
-	AddReadRefs(Op, args...)
+	AddUseRefs(Op, vr, name)
+	AddUseRefs(Op, args...)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -2949,7 +2949,7 @@ func (op *OpExprMethodCall) GetName() string {
 			}
 		}
 	}
-	funcName, _ := GetOperName(op.Name)
+	funcName, _ := GetOperandName(op.Name)
 	return className + "::" + funcName
 }
 func (op *OpExprMethodCall) GetOpVars() map[string]Operand {
@@ -3031,8 +3031,8 @@ func NewOpExprNew(class Operand, args []Operand, pos *position.Position) *OpExpr
 		Result:    NewTemporaryOperand(nil),
 	}
 
-	AddReadRef(Op, class)
-	AddReadRefs(Op, args...)
+	AddUseRef(Op, class)
+	AddUseRefs(Op, args...)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -3097,7 +3097,7 @@ func NewOpExprYield(value, key Operand, pos *position.Position) *OpExprYield {
 		Result:    NewTemporaryOperand(nil),
 	}
 
-	AddReadRefs(Op, value, key)
+	AddUseRefs(Op, value, key)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -3150,7 +3150,7 @@ func NewOpExprAssertion(read, write Operand, assertion Assertion, pos *position.
 		Result:    write,
 	}
 
-	AddReadRef(Op, read)
+	AddUseRef(Op, read)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -3200,7 +3200,7 @@ func NewOpExprPrint(expr Operand, pos *position.Position) *OpExprPrint {
 		Result: NewTemporaryOperand(nil),
 	}
 
-	AddReadRef(Op, expr)
+	AddUseRef(Op, expr)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -3261,8 +3261,8 @@ func NewOpExprStaticCall(class, name Operand, args []Operand, classPos, namePos 
 		ArgsPos:  argsPos,
 	}
 
-	AddReadRefs(Op, class, name)
-	AddReadRefs(Op, args...)
+	AddUseRefs(Op, class, name)
+	AddUseRefs(Op, args...)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -3339,7 +3339,7 @@ func (op *OpExprStaticCall) GetName() string {
 			}
 		}
 	}
-	funcName, err := GetOperName(op.Name)
+	funcName, err := GetOperandName(op.Name)
 	if err != nil {
 		log.Fatalf("Error in GetStaticCallName: %v", err)
 	}
@@ -3376,7 +3376,7 @@ func NewOpExprStaticPropertyFetch(class, name Operand, pos *position.Position) *
 		Result: NewTemporaryOperand(nil),
 	}
 
-	AddReadRefs(Op, class, name)
+	AddUseRefs(Op, class, name)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -3431,7 +3431,7 @@ func NewOpExprPropertyFetch(vr, name Operand, pos *position.Position) *OpExprPro
 		Result: NewTemporaryOperand(nil),
 	}
 
-	AddReadRefs(Op, vr, name)
+	AddUseRefs(Op, vr, name)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -3480,7 +3480,7 @@ func NewOpReset(vr Operand, pos *position.Position) *OpReset {
 		Var:       vr,
 	}
 
-	AddReadRef(Op, vr)
+	AddUseRef(Op, vr)
 
 	return Op
 }
@@ -3527,7 +3527,7 @@ func NewOpExprValid(vr Operand, pos *position.Position) *OpExprValid {
 		Result:    NewTemporaryOperand(nil),
 	}
 
-	AddReadRef(Op, vr)
+	AddUseRef(Op, vr)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -3578,7 +3578,7 @@ func NewOpExprKey(vr Operand, pos *position.Position) *OpExprKey {
 		Result:    NewTemporaryOperand(nil),
 	}
 
-	AddReadRef(Op, vr)
+	AddUseRef(Op, vr)
 	AddWriteRef(Op, Op.Result)
 
 	return Op
@@ -3631,7 +3631,7 @@ func NewOpExprValue(vr Operand, byRef bool, pos *position.Position) *OpExprValue
 		Result:    NewTemporaryOperand(nil),
 	}
 
-	AddReadRef(Op, vr)
+	AddUseRef(Op, vr)
 	AddWriteRef(Op, Op.Result)
 
 	return Op

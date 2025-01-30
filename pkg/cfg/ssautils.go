@@ -9,7 +9,7 @@ import (
 // Part Utils of Local Value Numbering Read Variable Name in current block
 func (builder *CFGBuilder) readVariable(vr Operand) (Operand, error) {
 	if vr == nil {
-		return nil, fmt.Errorf("read nil operand")
+		return nil, fmt.Errorf("readVariable: Nil Operand")
 	}
 	switch v := vr.(type) {
 	case *OperandBoundVariable:
@@ -17,7 +17,6 @@ func (builder *CFGBuilder) readVariable(vr Operand) (Operand, error) {
 	case *OperandVariable:
 		switch varName := v.VariableName.(type) {
 		case *OperandString:
-			
 			return builder.readVariableName(varName.Val, builder.currentBlock), nil
 		case *OperandVariable:
 			_, err := builder.readVariable(varName)
@@ -32,7 +31,7 @@ func (builder *CFGBuilder) readVariable(vr Operand) (Operand, error) {
 			}
 			return vr, nil
 		default:
-			log.Fatalf("readVariable:Error '%v'", reflect.TypeOf(varName))
+			log.Fatalf("readVariable:Error type '%v'", reflect.TypeOf(varName))
 		}
 	case *TemporaryOperand:
 		if v.Original != nil {
@@ -56,33 +55,13 @@ func (builder *CFGBuilder) readVariableName(name string, block *Block) Operand {
 	if ok {
 		return val
 	}
-
+	// if name is superglobal,
+	// create symbolic operand
 	switch name {
-	case "$_GET":
-		builder.currentFunc.FuncHasTaint = true
-		builder.currentBlock.HasTainted = true
-		return NewOperandSymbolic("getsymbolic", true)
-	case "$_POST":
-		builder.currentFunc.FuncHasTaint = true
-		builder.currentBlock.HasTainted = true
-		return NewOperandSymbolic("postsymbolic", true)
-	case "$_REQUEST":
-		builder.currentFunc.FuncHasTaint = true
-		builder.currentBlock.HasTainted = true
-		return NewOperandSymbolic("requestsymbolic", true)
-	case "$_FILES":
-		builder.currentFunc.FuncHasTaint = true
-		builder.currentBlock.HasTainted = true
-		return NewOperandSymbolic("filessymbolic", true)
-	case "$_COOKIE":
-		builder.currentFunc.FuncHasTaint = true
-		builder.currentBlock.HasTainted = true
-		return NewOperandSymbolic("cookiessymbolic", true)
-	case "$_SERVERS":
-		builder.currentFunc.FuncHasTaint = true
-		builder.currentBlock.HasTainted = true
-		return NewOperandSymbolic("serverssymbolic", true)
+	case "$_GET", "$_POST", "$_REQUEST", "$_FILES", "$_COOKIE", "$_SERVERS":
+		return builder.createGlobalSymbolic(name)
 	}
+
 	// Else search recursively from predecessors
 	return builder.readVariableRecursive(name, block)
 }
@@ -101,35 +80,59 @@ func (builder *CFGBuilder) readVariableRecursive(name string, block *Block) Oper
 	// Therefore, before recursing, we first create the phi function without operands and
 	// record it as the current definition for the variable in the block
 
-	vr := Operand(nil)
+	tVar := Operand(nil)
 	if !builder.FuncContex.IsComplete {
 		// Incomplete CFG, create an incomplete phi
-		vr = NewTemporaryOperand(NewOperandVariable(NewOperandString(name), nil))
-		phi := NewOpPhi(vr, block, nil)
+		tVar = NewTemporaryOperand(NewOperandVariable(NewOperandString(name), nil))
+		phi := NewOpPhi(tVar, block, nil)
 		builder.FuncContex.AddIncompletePhi(block, name, phi)
-		builder.writeVariableName(name, vr, block)
+		builder.writeVariableName(name, tVar, block)
 	} else if len(block.Predecesors) == 1 && !block.Predecesors[0].Dead {
-		// If the block has a single predecessor, just query it recursively for a definition
-		vr = builder.readVariableName(name, block.Predecesors[0])
-		builder.writeVariableName(name, vr, block)
+		// If the block has a single predecessor,
+		// just query it recursively for a definition
+		tVar = builder.readVariableName(name, block.Predecesors[0])
+		builder.writeVariableName(name, tVar, block)
 	} else {
-		// Read Recursively from predecesors
-		// create the phi function without operands
-		vr = NewTemporaryOperand(NewOperandVariable(NewOperandString(name), nil))
-		phi := NewOpPhi(vr, block, nil)
+
+		// Otherwise, we collect the definitions from
+		// all predecessors and construct a phi function
+
+		// before recursing, create the phi function without operands
+		// record it as the current definition for the variable in the block
+
+		tVar = NewTemporaryOperand(NewOperandVariable(NewOperandString(name), nil))
+		phi := NewOpPhi(tVar, block, nil)
 		block.AddPhi(phi)
-		builder.writeVariableName(name, vr, block)
+		builder.writeVariableName(name, tVar, block)
 
 		// we collect the definitions from all predecessors
 		for _, pred := range block.Predecesors {
 			if !pred.Dead {
 				oper := builder.readVariableName(name, pred)
-				phi.AddOperand(oper)
+				phi.AddOperandtoPhi(oper)
 			}
 		}
 	}
 
-	return vr
+	return tVar
+}
+
+func (builder *CFGBuilder) createGlobalSymbolic(name string) Operand {
+	specialVars := map[string]string{
+		"$_GET":     "globalgets",
+		"$_POST":    "globalposts",
+		"$_REQUEST": "globalrequest",
+		"$_FILES":   "globalfiles",
+		"$_COOKIE":  "globalcookies",
+		"$_SERVERS": "globalservers",
+	}
+	name, ok := specialVars[name]
+	if ok {
+		builder.currentFunc.FuncHasTaint = true
+		builder.currentBlock.HasTainted = true
+		return NewOperandSymbolic(name, true)
+	}
+	return nil
 }
 
 // Add a new variable definition to current block scope

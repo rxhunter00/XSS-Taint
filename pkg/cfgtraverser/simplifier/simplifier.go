@@ -1,6 +1,8 @@
 package simplifier
 
 import (
+	"strings"
+
 	"github.com/rxhunter00/XSS-Taint/pkg/cfg"
 	"github.com/rxhunter00/XSS-Taint/pkg/cfgtraverser"
 )
@@ -10,6 +12,8 @@ type Simplifier struct {
 	RecursionProtection map[cfg.Op]struct{}
 	TrivPhiCandidate    map[*cfg.OpPhi]*cfg.Block
 	FilePath            string
+	ArrVars             map[*cfg.OpExprArrayDimFetch]string
+	UnresolvedArrs      map[*cfg.OpExprArrayDimFetch]string
 
 	cfgtraverser.NullTraverser
 }
@@ -24,10 +28,14 @@ func (t *Simplifier) EnterScript(script *cfg.Script) {
 func (t *Simplifier) EnterFunc(fn *cfg.Func) {
 	t.Removed = make(map[*cfg.Block]struct{})
 	t.RecursionProtection = make(map[cfg.Op]struct{})
+	t.ArrVars = make(map[*cfg.OpExprArrayDimFetch]string)
+	t.UnresolvedArrs = make(map[*cfg.OpExprArrayDimFetch]string)
 }
 
 func (t *Simplifier) LeaveFunc(fn *cfg.Func) {
 	// remove trivial phi
+	t.ArrVars = nil
+	t.UnresolvedArrs = nil
 	if fn.CFGBlock != nil {
 		t.TrivPhiCandidate = make(map[*cfg.OpPhi]*cfg.Block)
 		t.removeTrivialPhi(fn.CFGBlock)
@@ -77,7 +85,7 @@ func (t *Simplifier) EnterOp(op cfg.Op, block *cfg.Block) {
 				// get phi from child block
 				for targetPhi := range jmpTarget.BlockPhi {
 					// childPhi use phi value
-					if targetPhi.HasOperand(phi.Result) {
+					if targetPhi.HasOperand(phi.PhiResult) {
 						foundPhis = append(foundPhis, targetPhi)
 						break
 					}
@@ -89,12 +97,12 @@ func (t *Simplifier) EnterOp(op cfg.Op, block *cfg.Block) {
 			}
 			// here, we can remove phi node and jmp
 			for i := 0; i < len(target.BlockPhi); i++ {
-				phi := jmptargetPhis[i]
+				jmpphi := jmptargetPhis[i]
 				foundPhi := foundPhis[i]
-				// we can actually remove the phi node and teh jump
-				foundPhi.RemoveOperand(phi.Result)
-				for oper := range phi.Vars {
-					foundPhi.AddOperand(oper)
+				// we can actually remove the phi node
+				foundPhi.RemoveOperandfromPhi(jmpphi.PhiResult)
+				for oper := range jmpphi.Vars {
+					foundPhi.AddOperandtoPhi(oper)
 				}
 			}
 			// empty block phi
@@ -110,6 +118,39 @@ func (t *Simplifier) EnterOp(op cfg.Op, block *cfg.Block) {
 		}
 	}
 	RemoveFromOpSet(t.RecursionProtection, op)
+	switch opT := op.(type) {
+	// Do Additional Mods here
+	case *cfg.OpExprArrayDimFetch:
+		arrDimStr := opT.String()
+		for arr, arrStr := range t.ArrVars {
+			if strings.HasPrefix(arrDimStr, arrStr) && opT != arr {
+				arr.Result.AddUser(opT)
+			}
+		}
+		t.UnresolvedArrs[opT] = arrDimStr
+
+	case *cfg.OpExprAssign:
+		// Get Writer of this Op
+		for _, left := range opT.Var.GetWriterOps() {
+			if left != nil {
+				// Left
+				leftDef, ok := left.(*cfg.OpExprArrayDimFetch)
+				leftDefStr := ""
+				if ok {
+					leftDefStr = leftDef.String()
+				}
+
+				if leftDefStr != "" {
+					t.ArrVars[leftDef] = leftDefStr
+					for arr, arrStr := range t.UnresolvedArrs {
+						if strings.HasPrefix(arrStr, leftDefStr) {
+							leftDef.Result.AddUser(arr)
+						}
+					}
+				}
+			}
+		}
+	}
 }
 
 func (t *Simplifier) removeTrivialPhi(block *cfg.Block) {
@@ -153,9 +194,9 @@ func (t *Simplifier) tryRemoveTrivialPhi(phi *cfg.OpPhi, block *cfg.Block) bool 
 	if len(phi.Vars) == 0 {
 		return true
 	} else {
-		vr = phi.GetVars()[0]
-		
-		t.replaceVariables(phi.Result, vr, block)
+		vr = phi.GetPhiOperands()[0]
+
+		t.replaceVariables(phi.PhiResult, vr, block)
 	}
 
 	return true
@@ -174,8 +215,8 @@ func (t *Simplifier) replaceVariables(from, to cfg.Operand, block *cfg.Block) {
 				if phi.HasOperand(from) {
 					// removing operand from phi, hence phi maybe become trivial
 					t.TrivPhiCandidate[phi] = block
-					phi.RemoveOperand(from)
-					phi.AddOperand(to)
+					phi.RemoveOperandfromPhi(from)
+					phi.AddOperandtoPhi(to)
 				}
 			}
 			for _, op := range block.Instructions {

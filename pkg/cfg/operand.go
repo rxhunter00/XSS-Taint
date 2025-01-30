@@ -70,16 +70,16 @@ func GetStringOper(oper Operand) (string, bool) {
 	return "", false
 }
 
-func GetOperName(oper Operand) (string, error) {
+func GetOperandName(oper Operand) (string, error) {
 	switch o := oper.(type) {
 	case *OperandBoundVariable:
-		return GetOperName(o.Name)
+		return GetOperandName(o.Name)
 	case *OperandVariable:
-		return GetOperName(o.VariableName)
+		return GetOperandName(o.VariableName)
 	case *OperandString:
 		return o.Val, nil
 	case *TemporaryOperand:
-		return GetOperName(o.Original)
+		return GetOperandName(o.Original)
 	case *OperandBool, *OperandNumber, *OperandNull, *OperandSymbolic:
 		return "", fmt.Errorf("operand doesn't have name '%v'", reflect.TypeOf(o))
 	}

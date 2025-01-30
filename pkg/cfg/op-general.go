@@ -16,7 +16,7 @@ func NewOpGeneral(pos *position.Position) OpGeneral {
 	}
 }
 
-// Should Delete if conflicting
+// TODO Check
 func (og *OpGeneral) GetType() string {
 	return "OpGeneral"
 }

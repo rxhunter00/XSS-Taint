@@ -72,18 +72,18 @@ func GetTypeAssertFunc(funcName string) (string, bool) {
 }
 
 // Add op to list of each operand usage
-func AddReadRefs(op Op, opers ...Operand) []Operand {
+func AddUseRefs(op Op, opers ...Operand) []Operand {
 	result := make([]Operand, 0)
 	for _, oper := range opers {
 		if oper != nil {
-			result = append(result, AddReadRef(op, oper))
+			result = append(result, AddUseRef(op, oper))
 		}
 	}
 	return result
 }
 
 // Add Op to list Op that that use/read this Operand
-func AddReadRef(op Op, oper Operand) Operand {
+func AddUseRef(op Op, oper Operand) Operand {
 	if oper == nil {
 		return nil
 	}
@@ -108,7 +108,6 @@ func AddWriteRef(op Op, oper Operand) Operand {
 	if oper == nil {
 		return nil
 	}
-
 	oper.AddWriter(op)
 	return oper
 }

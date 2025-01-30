@@ -313,7 +313,7 @@ func (builder *CFGBuilder) parseExprNode(exprVertex ast.Vertex) Operand {
 		}
 		op := NewOpExprPropertyFetch(vr, prop, exprT.Position)
 
-		varName, _ := GetOperName(vr)
+		varName, _ := GetOperandName(vr)
 		propStr, ok := GetOperVal(prop).(*OperandString)
 		if varName != "" && ok {
 			propFetchName := "<propfetch>" + varName[1:] + "->" + propStr.Val
@@ -334,7 +334,7 @@ func (builder *CFGBuilder) parseExprNode(exprVertex ast.Vertex) Operand {
 		op := NewOpExprPropertyFetch(vr, prop, exprT.Position)
 		builder.currentBlock.AddInstructions(op)
 
-		varName, _ := GetOperName(vr)
+		varName, _ := GetOperandName(vr)
 		propStr, ok := GetOperVal(prop).(*OperandString)
 		if varName != "" && ok {
 			propFetchName := "<propfetch>" + varName[1:] + "->" + propStr.Val
@@ -351,7 +351,7 @@ func (builder *CFGBuilder) parseExprNode(exprVertex ast.Vertex) Operand {
 		}
 		op := NewOpExprStaticPropertyFetch(classVar, prop, exprT.Position)
 
-		className, _ := GetOperName(classVar)
+		className, _ := GetOperandName(classVar)
 		propStr, ok := GetOperVal(prop).(*OperandString)
 		if className != "" && ok {
 			propFetchName := "<staticpropfetch>" + className[1:] + "->" + propStr.Val
@@ -449,8 +449,8 @@ func (builder *CFGBuilder) parseExprTernary(expr *ast.ExprTernary) Operand {
 	builder.currentBlock = endBlock
 	result := NewTemporaryOperand(nil)
 	phi := NewOpPhi(result, builder.currentBlock, expr.Position)
-	phi.AddOperand(ifVar)
-	phi.AddOperand(elseVar)
+	phi.AddOperandtoPhi(ifVar)
+	phi.AddOperandtoPhi(elseVar)
 	builder.currentBlock.AddPhi(phi)
 
 	// return phi
@@ -848,7 +848,7 @@ func (builder *CFGBuilder) parseExprVariable(expr *ast.ExprVariable) Operand {
 	varNameString, err := astutils.GetNameString(expr.Name)
 	operandName := builder.parseExprNode(expr.Name)
 	if varNameString == "this" && err != nil {
-		return NewOperandBoundVariable(operandName, nil, BOUND_VAR_SCOPE_OBJECT, false, builder.CurrClass)
+		return NewOperandBoundVariable(operandName, nil, BOUND_VAR_SCOPE_OBJECT, false, builder.currClassOper)
 
 	}
 

@@ -38,7 +38,7 @@ type CFGBuilder struct {
 	BlockIdCounter int
 	AnnonIdCounter int
 
-	CurrClass     *OperandString
+	currClassOper *OperandString
 	CurrNamespace string
 	currentBlock  *Block
 	currentFunc   *Func
@@ -195,7 +195,7 @@ func (builder *CFGBuilder) parseFunc(functionF *Func, functionParams []ast.Verte
 
 				if !pred.Dead {
 					vr := builder.readVariableName(name, pred)
-					phi.AddOperand(vr)
+					phi.AddOperandtoPhi(vr)
 				}
 			}
 			// append complete phi to the list
